@@ -2,13 +2,14 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-# Copy all project files
-COPY . .
-WORKDIR "/src/Just Practices .net"
+# Copy csproj and restore dependencies
+COPY ["EmplyeeeManagement/EmplyeeeManagement.csproj", "EmplyeeeManagement/"]
+RUN dotnet restore "EmplyeeeManagement/EmplyeeeManagement.csproj"
 
-# Restore and Publish
-RUN dotnet restore "Just Practices .net.csproj"
-RUN dotnet publish "Just Practices .net.csproj" -c Release -o /app/publish /p:UseAppHost=false
+# Copy remaining source code and publish
+COPY . .
+WORKDIR "/src/EmplyeeeManagement"
+RUN dotnet publish "EmplyeeeManagement.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
@@ -18,5 +19,4 @@ ENV ASPNETCORE_URLS=http://+:8080
 
 COPY --from=build /app/publish .
 
-ENTRYPOINT ["dotnet", "Just Practices .net.dll"]
-
+ENTRYPOINT ["dotnet", "EmplyeeeManagement.dll"]
