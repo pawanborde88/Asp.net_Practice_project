@@ -18,5 +18,6 @@ EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
 
 COPY --from=build /app/publish .
+COPY EmplyeeeManagement/employee_management.db .
 
 ENTRYPOINT ["dotnet", "EmplyeeeManagement.dll"]

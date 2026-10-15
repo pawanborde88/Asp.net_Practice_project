@@ -49,8 +49,15 @@ builder.Services.AddCors(options =>
 // ===========================
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("EmployeeConnection"));
+    var connStr = builder.Configuration.GetConnectionString("EmployeeConnection");
+    if (!string.IsNullOrEmpty(connStr) && connStr.Contains("Data Source=", StringComparison.OrdinalIgnoreCase))
+    {
+        options.UseSqlite(connStr);
+    }
+    else
+    {
+        options.UseSqlServer(connStr);
+    }
 });
 
 // ===========================
@@ -123,6 +130,19 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        dbContext.Database.EnsureCreated();
+    }
+    catch (Exception ex)
+    {
+        Log.Warning(ex, "Could not automatically ensure database creation.");
+    }
+}
 
 // ===========================
 // Logging
